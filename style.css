@@ -6,6 +6,25 @@ body {
     margin: 0;
     background-color: #f0f0f0;
   }
-  canvas {
+  
+  #gameArea {
+    position: relative;
+    width: 800px;
+    height: 600px;
     border: 2px solid #000;
   }
+  
+  #player, #police {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+  }
+  
+  #player {
+    background-image: url(ss.jpg);
+  }
+  
+  #police {
+    background-image: url(pp.jpg);
+  }
+  

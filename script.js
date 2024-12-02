@@ -1,100 +1,110 @@
-
-    window.onload = function() {
-      class FlyingObject {
-        constructor(x, y, size, color) {
-          this.x = x;
-          this.y = y;
-          this.size = size;
-          this.color = color;
-          this.speed = 5;
-
-          document.addEventListener('keydown', this.move.bind(this));
-        }
-
-        move(event) {
-          switch(event.key) {
+window.onload = function() {
+    class MovingObject {
+      constructor(elementId, x, y, size, speed = 5) {
+        this.element = document.getElementById(elementId);
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.speed = speed;
+        this.updatePosition();
+      }
+  
+      updatePosition() {
+        this.element.style.left = this.x + 'px';
+        this.element.style.top = this.y + 'px';
+      }
+    }
+  
+    class Player extends MovingObject {
+      constructor(elementId, x, y, size) {
+        super(elementId, x, y, size);
+        document.addEventListener('keydown', this.move.bind(this));
+      }
+  
+      move(event) {
+        switch(event.key) {
             case 'ArrowUp':
-              this.y -= this.speed;
-              break;
+                if(this.y != 0)
+                    this.y -= this.speed;
+                break;
             case 'ArrowDown':
-              this.y += this.speed;
+                if(this.y != 570)
+                    this.y += this.speed;
               break;
             case 'ArrowLeft':
-              this.x -= this.speed;
+                if(this.x != 0)
+                    this.x -= this.speed;
               break;
             case 'ArrowRight':
-              this.x += this.speed;
+                if(this.x != 770)
+                    this.x += this.speed;
               break;
           }
-        }
-
-        draw(ctx) {
-          ctx.fillStyle = this.color;
-          ctx.fillRect(this.x, this.y, this.size, this.size);
-        }
+        this.updatePosition();
       }
-
-      class AutonomousObject {
-        constructor(x, y, size, color) {
-          this.x = x;
-          this.y = y;
-          this.size = size;
-          this.color = color;
-          this.dx = 2; // prędkość w osi x
-          this.dy = 2; // prędkość w osi y
-        }
-
-        update(canvasWidth, canvasHeight) {
-          this.x += this.dx;
-          this.y += this.dy;
-
-          // Odbijanie od krawędzi ekranu
-          if (this.x <= 0 || this.x + this.size >= canvasWidth) {
-            this.dx *= -1;
-          }
-          if (this.y <= 0 || this.y + this.size >= canvasHeight) {
-            this.dy *= -1;
-          }
-        }
-
-        draw(ctx) {
-          ctx.fillStyle = this.color;
-          ctx.fillRect(this.x, this.y, this.size, this.size);
-        }
-      }
-
-      function detectCollision(obj1, obj2) {
-        return (
-          obj1.x < obj2.x + obj2.size &&
-          obj1.x + obj1.size > obj2.x &&
-          obj1.y < obj2.y + obj2.size &&
-          obj1.y + obj1.size > obj2.y
-        );
-      }
-
-      function handleCollision() {
-        alert('Kolizja wykryta!');
-      }
-
-      const canvas = document.getElementById('gameCanvas');
-      const ctx = canvas.getContext('2d');
-
-      const player = new FlyingObject(50, 50, 30, 'blue');
-      const enemy = new AutonomousObject(200, 200, 30, 'red');
-
-      function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        player.draw(ctx);
-        enemy.update(canvas.width, canvas.height);
-        enemy.draw(ctx);
-
-        if (detectCollision(player, enemy)) {
-          handleCollision();
-        }
-
-        requestAnimationFrame(gameLoop);
-      }
-
-      gameLoop();
     }
+  
+    class AutonomousObject extends MovingObject {
+      constructor(elementId, x, y, size) {
+        super(elementId, x, y, size);
+        this.dx = 1;
+        this.dy = 1;
+      }
+  
+      update(canvasWidth, canvasHeight, targetX, targetY) {
+        if (this.x < targetX) {
+          this.x += this.dx;
+        } else if (this.x > targetX) {
+          this.x -= this.dx;
+        }
+  
+        if (this.y < targetY) {
+          this.y += this.dy;
+        } else if (this.y > targetY) {
+          this.y -= this.dy;
+        }
+  
+        if (this.x <= 0 || this.x + this.size >= canvasWidth) {
+          this.dx *= -1;
+        }
+        if (this.y <= 0 || this.y + this.size >= canvasHeight) {
+          this.dy *= -1;
+        }
+  
+        this.updatePosition();
+      }
+    }
+  
+    function detectCollision(obj1, obj2) {
+      return (
+        obj1.x < obj2.x + obj2.size &&
+        obj1.x + obj1.size > obj2.x &&
+        obj1.y < obj2.y + obj2.size &&
+        obj1.y + obj1.size > obj2.y
+      );
+    }
+  
+    function handleCollision() {
+      alert('Policja złapała czarnucha!');
+    }
+  
+    const player = new Player('player', 50, 50, 30);
+    const police = new AutonomousObject('police', 200, 200, 30);
+  
+    function gameLoop() {
+      const gameArea = document.getElementById('gameArea');
+      const canvasWidth = gameArea.clientWidth;
+      const canvasHeight = gameArea.clientHeight;
+  
+      police.update(canvasWidth, canvasHeight, player.x, player.y);
+  
+      if (detectCollision(player, police)) {
+        handleCollision();
+      }
+  
+      requestAnimationFrame(gameLoop);
+    }
+  
+    gameLoop();
+  }
+  
